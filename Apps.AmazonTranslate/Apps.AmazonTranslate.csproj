@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AWSSDK.Translate" Version="3.7.102.14" />
+      <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.0.7" />
+    </ItemGroup>
+
+</Project>
