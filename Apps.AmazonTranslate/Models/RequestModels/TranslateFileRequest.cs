@@ -1,8 +1,9 @@
-﻿namespace Apps.AmazonTranslate.Models.RequestModels;
+﻿using Apps.AmazonTranslate.Models.RequestModels.Base;
+using Blackbird.Applications.Sdk.Common;
 
-public class TranslateFileRequest
+namespace Apps.AmazonTranslate.Models.RequestModels;
+
+public class TranslateFileRequest : TranslateRequest
 {
-    public string TargetLanguageCode { get; set; }
-    public string SourceLanguageCode { get; set; }
     public byte[] FileContent { get; set; }
 }

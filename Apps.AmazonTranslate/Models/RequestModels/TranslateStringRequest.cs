@@ -1,8 +1,8 @@
-﻿namespace Apps.AmazonTranslate.Models.RequestModels;
+﻿using Apps.AmazonTranslate.Models.RequestModels.Base;
 
-public class TranslateStringRequest
+namespace Apps.AmazonTranslate.Models.RequestModels;
+
+public class TranslateStringRequest : TranslateRequest
 {
-    public string TargetLanguageCode { get; set; }
-    public string SourceLanguageCode { get; set; }
     public string Text { get; set; }
 };
