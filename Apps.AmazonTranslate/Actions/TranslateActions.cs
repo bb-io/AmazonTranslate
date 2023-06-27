@@ -23,7 +23,7 @@ public class TranslateActions
             TargetLanguageCode = translateData.TargetLanguageCode,
             Text = translateData.Text
         };
-        
+
         var translator = CreateTranslator(authenticationCredentialsProviders.ToArray());
         return translator.TranslateTextAsync(request);
     }

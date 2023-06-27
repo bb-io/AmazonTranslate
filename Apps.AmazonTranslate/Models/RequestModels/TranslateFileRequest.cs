@@ -1,3 +1,8 @@
 ﻿namespace Apps.AmazonTranslate.Models.RequestModels;
 
-public record TranslateFileRequest(string TargetLanguageCode, string SourceLanguageCode, byte[] FileContent);
+public class TranslateFileRequest
+{
+    public string TargetLanguageCode { get; set; }
+    public string SourceLanguageCode { get; set; }
+    public byte[] FileContent { get; set; }
+}

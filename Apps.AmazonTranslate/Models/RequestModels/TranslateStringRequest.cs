@@ -1,3 +1,8 @@
 ﻿namespace Apps.AmazonTranslate.Models.RequestModels;
 
-public record TranslateStringRequest(string TargetLanguageCode, string SourceLanguageCode, string Text);
+public class TranslateStringRequest
+{
+    public string TargetLanguageCode { get; set; }
+    public string SourceLanguageCode { get; set; }
+    public string Text { get; set; }
+};
