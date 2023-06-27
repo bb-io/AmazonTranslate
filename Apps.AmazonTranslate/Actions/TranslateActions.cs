@@ -15,8 +15,15 @@ public class TranslateActions
     [Action("Translate", Description = "Translate a string")]
     public Task<TranslateTextResponse> Translate(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] TranslateTextRequest request)
+        [ActionParameter] TranslateStringRequest translateData)
     {
+        var request = new TranslateTextRequest
+        {
+            SourceLanguageCode = translateData.SourceLanguageCode,
+            TargetLanguageCode = translateData.TargetLanguageCode,
+            Text = translateData.Text
+        };
+        
         var translator = CreateTranslator(authenticationCredentialsProviders.ToArray());
         return translator.TranslateTextAsync(request);
     }

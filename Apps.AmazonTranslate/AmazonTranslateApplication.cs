@@ -6,7 +6,7 @@ public class AmazonTranslateApplication : IApplication
 {
     public string Name
     {
-        get => "DeepL";
+        get => "Amazon Translate";
         set { }
     }
 
