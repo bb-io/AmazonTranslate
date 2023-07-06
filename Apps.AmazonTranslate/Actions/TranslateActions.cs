@@ -1,7 +1,7 @@
-﻿using Amazon;
-using Amazon.Translate;
+﻿using Amazon.Translate;
 using Amazon.Translate.Model;
-using Apps.AmazonTranslate.Constants;
+using Apps.AmazonTranslate.Factories;
+using Apps.AmazonTranslate.Handlers;
 using Apps.AmazonTranslate.Models.RequestModels;
 using Apps.AmazonTranslate.Models.ResponseModels;
 using Apps.AmazonTranslate.Utils;
@@ -30,12 +30,13 @@ public class TranslateActions
                 Formality = TranslateSettingsParser.ParseFormality(translateData.Formality),
                 Profanity = translateData.MaskProfanity ? Profanity.MASK : null
             },
-            Text = translateData.Text
+            Text = translateData.Text,
         };
 
-        var translator = CreateTranslator(authenticationCredentialsProviders.ToArray());
-        var translateResult = await ExecuteTranslation<TranslateTextResponse>(() => translator.TranslateTextAsync(request));
-        
+        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
+        var translateResult = await AwsRequestHandler.ExecuteAction<TranslateTextResponse>(()
+            => translator.TranslateTextAsync(request));
+
         return new TranslatedStringResult
         {
             TranslatedText = translateResult.TranslatedText,
@@ -62,68 +63,18 @@ public class TranslateActions
                 Profanity = translateData.MaskProfanity ? Profanity.MASK : null
             },
             SourceLanguageCode = translateData.SourceLanguageCode,
-            TargetLanguageCode = translateData.TargetLanguageCode
+            TargetLanguageCode = translateData.TargetLanguageCode,
         };
 
-        var translator = CreateTranslator(authenticationCredentialsProviders.ToArray());
-        var translatedFile = await ExecuteTranslation<TranslateDocumentResponse>(() => translator.TranslateDocumentAsync(request));
+        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
+        var translatedFile = await AwsRequestHandler.ExecuteAction<TranslateDocumentResponse>(()
+            => translator.TranslateDocumentAsync(request));
 
         return new TranslatedFileResult
         {
             File = translatedFile.TranslatedDocument.Content.ToArray(),
             Formality = translatedFile.AppliedSettings.Formality,
             Profanity = translatedFile.AppliedSettings.Profanity
-        };
-    }
-
-    #endregion
-
-    #region Utils
-
-    private AmazonTranslateClient CreateTranslator(
-        AuthenticationCredentialsProvider[] authenticationCredentialsProviders)
-    {
-        var key = authenticationCredentialsProviders.First(p => p.KeyName == "access_key");
-        var secret = authenticationCredentialsProviders.First(p => p.KeyName == "access_secret");
-
-        if (string.IsNullOrEmpty(key.Value) || string.IsNullOrEmpty(secret.Value))
-            throw new Exception(ExceptionMessages.CredentialsMissing);
-            
-        return new(key.Value, secret.Value, new AmazonTranslateConfig
-        {
-            RegionEndpoint = RegionEndpoint.USWest2
-        });
-    }
-
-    private async Task<T> ExecuteTranslation<T>(Func<Task<T>> func)
-    {
-        try
-        {
-            return await func();
-        }
-        catch (Exception ex)
-        {
-            var message = ex switch
-            {
-                TooManyRequestsException => ExceptionMessages.TooManyRequests,
-                TextSizeLimitExceededException => ExceptionMessages.TextSizeLimit,
-                ServiceUnavailableException => ExceptionMessages. ServiceUnavailable,
-                AmazonTranslateException aex => GetAmazonTranslateExceptionMessage(aex),
-                _ => ExceptionMessages.TryAgain
-            };
-            
-            throw new Exception(message, ex);
-        }
-    }
-
-    private string GetAmazonTranslateExceptionMessage(AmazonTranslateException aex)
-    {
-        return aex.ErrorCode switch
-        {
-            "InvalidSignatureException" => ExceptionMessages.WrongAccessKey,
-            "UnrecognizedClientException" => ExceptionMessages.WrongSecret,
-            "AccessDeniedException" => ExceptionMessages.AccessDenied,
-            _ => aex.Message
         };
     }
 
