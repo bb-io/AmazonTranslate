@@ -27,9 +27,10 @@ public class TranslateActions
             TargetLanguageCode = translateData.TargetLanguageCode,
             Settings = new()
             {
-                Formality = TranslateSettingsParser.ParseFormality(translateData.Formality),
+                Formality = TranslateSettingsParser.ParseFormality(translateData.Formality!),
                 Profanity = translateData.MaskProfanity ? Profanity.MASK : null
             },
+            TerminologyNames = translateData.Terminologies?.ToList(),
             Text = translateData.Text,
         };
 

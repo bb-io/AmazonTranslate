@@ -20,7 +20,7 @@ public static class TranslatorFactory
             
         return new(key.Value, secret.Value, new AmazonTranslateConfig
         {
-            RegionEndpoint = region ?? RegionEndpoint.USEast2
+            RegionEndpoint = region ?? RegionEndpoint.USWest2
         });
     }
     
@@ -41,5 +41,15 @@ public static class TranslatorFactory
             throw new("Source and target bucket regions must match");
         
         return CreateTranslator(authenticationCredentialsProviders, sourceBucketRegion);
+    }    
+    
+    public static async Task<AmazonTranslateClient> CreateBucketTranslator(
+        AuthenticationCredentialsProvider[] authenticationCredentialsProviders,
+        string location)
+    {
+        var bucketRegion =
+            await S3BucketUtils.GetBucketRegion(authenticationCredentialsProviders, location);
+        
+        return CreateTranslator(authenticationCredentialsProviders, bucketRegion);
     }
 }

@@ -29,6 +29,9 @@ public static class AwsRequestHandler
 
     private static string GetAmazonTranslateExceptionMessage(AmazonTranslateException aex)
     {
+        if (aex.ErrorCode is "NotAuthorizedException" && aex.Message.Contains("Your account has been block-listed"))
+            return ExceptionMessages.ParallelDataRegion;
+        
         return aex.ErrorCode switch
         {
             "InvalidSignatureException" => ExceptionMessages.WrongAccessKey,
