@@ -83,14 +83,14 @@ public class JobActions
     [Action("Describe a translation job", Description = "Describe a specific translation job")]
     public async Task<JobResponse> DescribeJob(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Job id")] string jobId)
+        [ActionParameter] JobRequest job)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var response = await translator.DescribeTextTranslationJobAsync(new()
         {
-            JobId = jobId
+            JobId = job.JobId
         });
 
         return new(response.TextTranslationJobProperties);
@@ -99,14 +99,14 @@ public class JobActions
     [Action("Stop a translation job", Description = "Stop a specific translation job")]
     public async Task<SmallJobResponse> StopJob(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Job id")] string jobId)
+        [ActionParameter] JobRequest job)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var response = await translator.StopTextTranslationJobAsync(new()
         {
-            JobId = jobId
+            JobId = job.JobId
         });
 
         return new()

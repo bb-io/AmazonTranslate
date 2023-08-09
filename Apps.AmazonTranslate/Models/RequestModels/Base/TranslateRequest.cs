@@ -1,13 +1,25 @@
-﻿using Blackbird.Applications.Sdk.Common;
+﻿using Apps.AmazonTranslate.DataSourceHandlers;
+using Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
+using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.AmazonTranslate.Models.RequestModels.Base;
 
 // TODO: Add terminology parameter
 public class TranslateRequest
 {
-    [Display("Source language code")] public string SourceLanguageCode { get; set; }
-    [Display("Target language code")] public string TargetLanguageCode { get; set; }
+    [Display("Source language")]
+    [DataSource(typeof(LanguageDataHandler))]
+    public string SourceLanguageCode { get; set; }
+
+    [Display("Target language")]
+    [DataSource(typeof(LanguageDataHandler))]
+    public string TargetLanguageCode { get; set; }
+
     public IEnumerable<string>? Terminologies { get; set; }
+
+    [DataSource(typeof(FormalityDataHandler))]
     public string? Formality { get; set; }
+
     [Display("Mask profanity?")] public bool MaskProfanity { get; set; }
 }

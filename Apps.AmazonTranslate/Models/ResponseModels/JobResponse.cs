@@ -22,7 +22,7 @@ public class JobResponse
     public string Status { get; set; }
     public string Message { get; set; }
     [Display("Source language code")] public string SourceLanguageCode { get; set; }
-    [Display("Target language code")] public List<string> TargetLanguageCodes { get; set; }
+    [Display("Target language code")] public IEnumerable<string> TargetLanguageCodes { get; set; }
     [Display("Input documents count")] public int InputDocumentsCount { get; set; }
     [Display("Translated documents count")] public int TranslatedDocumentsCount { get; set; }
 }

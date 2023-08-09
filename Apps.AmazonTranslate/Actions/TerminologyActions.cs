@@ -35,10 +35,10 @@ public class TerminologyActions
 
         var response = await AwsRequestHandler.ExecuteAction(()
             => translator.ImportTerminologyAsync(request));
-        
+
         return new(response.TerminologyProperties);
     }
-    
+
     [Action("List terminologies", Description = "Lists custom terminologies associated with your account")]
     public async Task<AllTerminologiesResponse> ListTerminologies(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders)
@@ -63,24 +63,22 @@ public class TerminologyActions
             results.AddRange(response.TerminologyPropertiesList
                 .Select(x => new TerminologyResponse(x)));
         } while (!string.IsNullOrEmpty(next));
-        
+
         return new(results);
     }
 
     [Action("Get terminology", Description = "Retrieves a custom terminology")]
     public async Task<TerminologyResponse> GetTerminology(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Name")] string name,
-        [ActionParameter] [Display("Data format")]
-        string format)
+        [ActionParameter] GetTermRequest input)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new GetTerminologyRequest
         {
-            Name = name,
-            TerminologyDataFormat = format
+            Name = input.Terminology,
+            TerminologyDataFormat = input.Format
         };
 
         var response = await AwsRequestHandler.ExecuteAction(()
@@ -89,18 +87,18 @@ public class TerminologyActions
 
         return new(response.TerminologyProperties);
     }
-    
+
     [Action("Delete terminology", Description = "Retrieves a custom terminology")]
     public Task DeleteTerminology(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Name")] string name)
+        [ActionParameter] TerminologyRequest terminology)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new DeleteTerminologyRequest
         {
-            Name = name
+            Name = terminology.Terminology
         };
 
         return AwsRequestHandler.ExecuteAction(()

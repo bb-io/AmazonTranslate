@@ -15,7 +15,7 @@ public class ParallelDataActions
     [Action("Create parallel data", Description = "Creates a parallel data resource in Amazon Translate")]
     public async Task<ParallelDataResponse> CreateParallelData(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] ManagePDRequest requestData)
+        [ActionParameter] CreatePDRequest requestData)
     {
         var request = new CreateParallelDataRequest
         {
@@ -69,14 +69,14 @@ public class ParallelDataActions
     [Action("Get parallel data", Description = "Provides information about a parallel data resource")]
     public async Task<FullParallelDataResponse> GetParallelData(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Name")] string name)
+        [ActionParameter] ParallelDataRequest pd)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new GetParallelDataRequest
         {
-            Name = name
+            Name = pd.PdName
         };
         
         var response = await AwsRequestHandler.ExecuteAction(() => translator.GetParallelDataAsync(request));
@@ -87,7 +87,7 @@ public class ParallelDataActions
     [Action("Update parallel data", Description = "Updates a previously created parallel data resource")]
     public async Task<ParallelDataResponse> UpdateParallelData(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] ManagePDRequest requestData)
+        [ActionParameter] UpdatePdRequest requestData)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
@@ -111,14 +111,14 @@ public class ParallelDataActions
     [Action("Delete parallel data", Description = "Deletes a parallel data resource in Amazon Translate")]
     public Task DeleteParallelData(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] [Display("Name")] string name)
+        [ActionParameter] ParallelDataRequest pd)
     {
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new DeleteParallelDataRequest
         {
-            Name = name
+            Name = pd.PdName
         };
         
         return AwsRequestHandler.ExecuteAction(() => translator.DeleteParallelDataAsync(request));
