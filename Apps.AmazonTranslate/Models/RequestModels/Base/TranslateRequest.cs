@@ -5,7 +5,6 @@ using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.AmazonTranslate.Models.RequestModels.Base;
 
-// TODO: Add terminology parameter
 public class TranslateRequest
 {
     [Display("Source language")]

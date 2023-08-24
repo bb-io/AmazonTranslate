@@ -28,7 +28,7 @@ public class TerminologyActions
             MergeStrategy = MergeStrategy.OVERWRITE,
             TerminologyData = new()
             {
-                File = new(requestData.FileContent),
+                File = new(requestData.File.Bytes),
                 Format = requestData.Format
             }
         };

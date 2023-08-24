@@ -51,12 +51,13 @@ public class TranslateActions
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         [ActionParameter] TranslateFileRequest translateData)
     {
+        var contentType = translateData.File.ContentType ?? "text/plain";
         var request = new TranslateDocumentRequest
         {
             Document = new()
             {
-                Content = new(translateData.FileContent),
-                ContentType = "text/plain"
+                Content = new(translateData.File.Bytes),
+                ContentType = contentType
             },
             Settings = new()
             {
@@ -73,7 +74,11 @@ public class TranslateActions
 
         return new TranslatedFileResult
         {
-            File = translatedFile.TranslatedDocument.Content.ToArray(),
+            File = new(translatedFile.TranslatedDocument.Content.ToArray())
+            {
+                ContentType = contentType,
+                Name = translateData.File.Name
+            },
             Formality = translatedFile.AppliedSettings.Formality,
             Profanity = translatedFile.AppliedSettings.Profanity
         };
