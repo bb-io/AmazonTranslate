@@ -79,8 +79,8 @@ public class TranslateActions
                 ContentType = contentType,
                 Name = translateData.File.Name
             },
-            Formality = translatedFile.AppliedSettings.Formality,
-            Profanity = translatedFile.AppliedSettings.Profanity
+            Formality = translatedFile.AppliedSettings?.Formality,
+            Profanity = translatedFile.AppliedSettings?.Profanity
         };
     }
 
