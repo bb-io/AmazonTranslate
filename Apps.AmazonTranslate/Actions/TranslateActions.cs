@@ -51,7 +51,7 @@ public class TranslateActions
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         [ActionParameter] TranslateFileRequest translateData)
     {
-        var contentType = translateData.File.ContentType ?? "text/plain";
+        var contentType = translateData.File.ContentType.Contains("html") ? "text/html" : "text/plain";
         var request = new TranslateDocumentRequest
         {
             Document = new()
