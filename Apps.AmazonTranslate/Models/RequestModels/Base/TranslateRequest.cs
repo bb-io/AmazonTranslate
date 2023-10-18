@@ -9,7 +9,7 @@ public class TranslateRequest
 {
     [Display("Source language")]
     [DataSource(typeof(LanguageDataHandler))]
-    public string SourceLanguageCode { get; set; }
+    public string? SourceLanguageCode { get; set; }
 
     [Display("Target language")]
     [DataSource(typeof(LanguageDataHandler))]
@@ -20,5 +20,5 @@ public class TranslateRequest
     [DataSource(typeof(FormalityDataHandler))]
     public string? Formality { get; set; }
 
-    [Display("Mask profanity?")] public bool MaskProfanity { get; set; }
+    [Display("Mask profanity?")] public bool? MaskProfanity { get; set; }
 }

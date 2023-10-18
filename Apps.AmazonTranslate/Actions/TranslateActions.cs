@@ -23,12 +23,12 @@ public class TranslateActions
     {
         var request = new TranslateTextRequest
         {
-            SourceLanguageCode = translateData.SourceLanguageCode,
+            SourceLanguageCode = translateData.SourceLanguageCode ?? "auto",
             TargetLanguageCode = translateData.TargetLanguageCode,
             Settings = new()
             {
                 Formality = TranslateSettingsParser.ParseFormality(translateData.Formality!),
-                Profanity = translateData.MaskProfanity ? Profanity.MASK : null
+                Profanity = translateData.MaskProfanity.HasValue ? (translateData.MaskProfanity.Value ? Profanity.MASK : null) : null
             },
             TerminologyNames = translateData.Terminologies?.ToList(),
             Text = translateData.Text,
@@ -62,9 +62,9 @@ public class TranslateActions
             Settings = new()
             {
                 Formality = TranslateSettingsParser.ParseFormality(translateData.Formality),
-                Profanity = translateData.MaskProfanity ? Profanity.MASK : null
+                Profanity = translateData.MaskProfanity.HasValue ? (translateData.MaskProfanity.Value ? Profanity.MASK : null) : null
             },
-            SourceLanguageCode = translateData.SourceLanguageCode,
+            SourceLanguageCode = translateData.SourceLanguageCode ?? "auto",
             TargetLanguageCode = translateData.TargetLanguageCode,
         };
 
