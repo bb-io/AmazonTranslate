@@ -7,10 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AWSSDK.S3" Version="3.7.107.1"/>
-        <PackageReference Include="AWSSDK.Translate" Version="3.7.102.14"/>
-        <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.1.0-alpha2"/>
-        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.2"/>
+        <PackageReference Include="AWSSDK.S3" Version="3.7.107.1" />
+        <PackageReference Include="AWSSDK.Translate" Version="3.7.102.14" />
+        <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.2.0-alpha3" />
+        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.12" />
     </ItemGroup>
 
 </Project>

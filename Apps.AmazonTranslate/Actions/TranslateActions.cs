@@ -41,8 +41,6 @@ public class TranslateActions
         return new TranslatedStringResult
         {
             TranslatedText = translateResult.TranslatedText,
-            Formality = translateResult.AppliedSettings.Formality,
-            Profanity = translateResult.AppliedSettings.Profanity,
         };
     }
 
@@ -78,9 +76,7 @@ public class TranslateActions
             {
                 ContentType = contentType,
                 Name = translateData.File.Name
-            },
-            Formality = translatedFile.AppliedSettings?.Formality,
-            Profanity = translatedFile.AppliedSettings?.Profanity
+            }
         };
     }
 

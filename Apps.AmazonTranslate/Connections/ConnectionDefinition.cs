@@ -14,8 +14,8 @@ public class ConnectionDefinition : IConnectionDefinition
             ConnectionUsage = ConnectionUsage.Actions,
             ConnectionProperties = new List<ConnectionProperty>
             {
-                new("access_key"),
-                new("access_secret")
+                new("access_key") { DisplayName = "Access key"},
+                new("access_secret") { DisplayName = "Access secret", Sensitive= true },
             }
         }
     };

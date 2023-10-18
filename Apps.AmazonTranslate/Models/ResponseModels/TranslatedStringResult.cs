@@ -4,8 +4,6 @@ namespace Apps.AmazonTranslate.Models.ResponseModels;
 
 public record TranslatedStringResult
 {
-    [Display("Translated text")]
+    [Display("Translation")]
     public string TranslatedText { get; init; }
-    public string Formality { get; init; }
-    public string Profanity { get; init; }
 }
