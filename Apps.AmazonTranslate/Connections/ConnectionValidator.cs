@@ -3,13 +3,6 @@ using Apps.AmazonTranslate.Factories;
 using Apps.AmazonTranslate.Handlers;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Connections;
-using RestSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Apps.AmazonTranslate.Connections
 {
@@ -26,8 +19,9 @@ namespace Apps.AmazonTranslate.Connections
 
             try
             {
-                var response = await AwsRequestHandler.ExecuteAction(() => translator.ListLanguagesAsync(request));
-                return new ConnectionValidationResponse()
+                var response = await AwsRequestHandler.ExecuteAction(() => translator.ListLanguagesAsync(request, cancellationToken));
+                
+                return new()
                 {
                     IsValid = true,
                     Message = "Success"
@@ -35,7 +29,7 @@ namespace Apps.AmazonTranslate.Connections
             }
             catch (Exception ex)
             {
-                return new ConnectionValidationResponse()
+                return new()
                 {
                     IsValid = false,
                     Message = ex.Message
