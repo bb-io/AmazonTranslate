@@ -28,10 +28,13 @@ public class TranslateActions
             Settings = new()
             {
                 Formality = TranslateSettingsParser.ParseFormality(translateData.Formality!),
-                Profanity = translateData.MaskProfanity.HasValue ? (translateData.MaskProfanity.Value ? Profanity.MASK : null) : null
+                Profanity = translateData.MaskProfanity.HasValue
+                    ? (translateData.MaskProfanity.Value ? Profanity.MASK : null)
+                    : null,
+                Brevity = translateData.TurnOnBrevity is true ? Brevity.ON : default
             },
             TerminologyNames = translateData.Terminologies?.ToList(),
-            Text = translateData.Text,
+            Text = translateData.Text
         };
 
         var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
@@ -60,7 +63,10 @@ public class TranslateActions
             Settings = new()
             {
                 Formality = TranslateSettingsParser.ParseFormality(translateData.Formality),
-                Profanity = translateData.MaskProfanity.HasValue ? (translateData.MaskProfanity.Value ? Profanity.MASK : null) : null
+                Profanity = translateData.MaskProfanity.HasValue
+                    ? (translateData.MaskProfanity.Value ? Profanity.MASK : null)
+                    : null,
+                Brevity = translateData.TurnOnBrevity is true ? Brevity.ON : default
             },
             SourceLanguageCode = translateData.SourceLanguageCode ?? "auto",
             TargetLanguageCode = translateData.TargetLanguageCode,
