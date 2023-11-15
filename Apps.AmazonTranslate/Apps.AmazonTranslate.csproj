@@ -1,20 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <Product>Amazon Translate</Product>
-    <Description>Fluent and accurate machine translation</Description>
-    <Version>1.0.3</Version>
-    <AssemblyName>Apps.AmazonTranslate</AssemblyName>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.107.1" />
-    <PackageReference Include="AWSSDK.Translate" Version="3.7.102.14" />
-    <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.2.0-alpha3" />
-    <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.12" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png" />
-  </ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Product>Amazon Translate</Product>
+        <Description>Fluent and accurate machine translation</Description>
+        <Version>1.1.0</Version>
+        <AssemblyName>Apps.AmazonTranslate</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AWSSDK.S3" Version="3.7.107.1"/>
+        <PackageReference Include="AWSSDK.Translate" Version="3.7.201.4"/>
+        <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.2.0-alpha3"/>
+        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.12"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource CopyToOutputDirectory="Always" Include="image\icon.png"/>
+    </ItemGroup>
+
 </Project>

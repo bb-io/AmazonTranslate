@@ -21,4 +21,6 @@ public class TranslateRequest
     public string? Formality { get; set; }
 
     [Display("Mask profanity?")] public bool? MaskProfanity { get; set; }
+    
+    [Display("Turn on brevity")] public bool? TurnOnBrevity { get; set; }
 }
