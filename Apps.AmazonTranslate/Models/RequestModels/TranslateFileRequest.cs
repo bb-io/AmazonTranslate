@@ -8,4 +8,7 @@ public class TranslateFileRequest : TranslateRequest
 {
     [Display("File", Description = "File in HTML, TXT, or DOCX format.")]
     public File File { get; set; }
+    
+    [Display("Output filename", Description = "Name of the resulting file without an extension.")]
+    public string? OutputFilename { get; set; }
 }

@@ -92,13 +92,17 @@ public class TranslateActions
         var translatedFile = await AwsRequestHandler.ExecuteAction<TranslateDocumentResponse>(()
             => translator.TranslateDocumentAsync(request));
 
+        var translatedFileName = translateData.OutputFilename != null
+            ? Path.GetFileNameWithoutExtension(translateData.OutputFilename) + fileExtension
+            : Path.GetFileNameWithoutExtension(translateData.File.Name) 
+              + $"_{translatedFile.TargetLanguageCode}{fileExtension}";
+        
         return new TranslatedFileResult
         {
             File = new(translatedFile.TranslatedDocument.Content.ToArray())
             {
                 ContentType = contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType,
-                Name = Path.GetFileNameWithoutExtension(translateData.File.Name) 
-                       + $"_{translatedFile.SourceLanguageCode}_{translatedFile.TargetLanguageCode}{fileExtension}"
+                Name = translatedFileName
             }
         };
     }
