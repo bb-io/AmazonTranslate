@@ -1,4 +1,5 @@
-﻿using Amazon.Translate;
+﻿using System.Net.Mime;
+using Amazon.Translate;
 using Amazon.Translate.Model;
 using Apps.AmazonTranslate.Factories;
 using Apps.AmazonTranslate.Handlers;
@@ -52,7 +53,22 @@ public class TranslateActions
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         [ActionParameter] TranslateFileRequest translateData)
     {
-        var contentType = translateData.File.ContentType.Contains("html") ? "text/html" : "text/plain";
+        var allowedContentTypes = new Dictionary<string, string>
+        {
+            { ".html", MediaTypeNames.Text.Html },
+            { ".txt", MediaTypeNames.Text.Plain },
+            { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
+        };
+        var fileContentType = translateData.File.ContentType;
+        var fileExtension = Path.GetExtension(translateData.File.Name);
+        
+        if (!allowedContentTypes.Values.Contains(fileContentType) && !allowedContentTypes.Keys.Contains(fileExtension))
+            throw new Exception("The file must be in one of the following formats: HTML, TXT, or DOCX.");
+
+        var contentType = allowedContentTypes.Values.Contains(fileContentType)
+            ? fileContentType
+            : allowedContentTypes[fileExtension];
+        
         var request = new TranslateDocumentRequest
         {
             Document = new()
@@ -80,8 +96,9 @@ public class TranslateActions
         {
             File = new(translatedFile.TranslatedDocument.Content.ToArray())
             {
-                ContentType = contentType,
-                Name = translateData.File.Name
+                ContentType = contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType,
+                Name = Path.GetFileNameWithoutExtension(translateData.File.Name) 
+                       + $"_{translatedFile.SourceLanguageCode}_{translatedFile.TargetLanguageCode}{fileExtension}"
             }
         };
     }
