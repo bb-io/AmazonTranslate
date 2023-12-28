@@ -9,12 +9,20 @@ using Apps.AmazonTranslate.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 
 namespace Apps.AmazonTranslate.Actions;
 
 [ActionList]
 public class TranslateActions
 {
+    private readonly IFileManagementClient _fileManagementClient;
+
+    public TranslateActions(IFileManagementClient fileManagementClient)
+    {
+        _fileManagementClient = fileManagementClient;
+    }
+
     #region Actions
 
     [Action("Translate", Description = "Translate a string")]
@@ -59,21 +67,26 @@ public class TranslateActions
             { ".txt", MediaTypeNames.Text.Plain },
             { ".docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }
         };
-        var fileContentType = translateData.File.ContentType;
-        var fileExtension = Path.GetExtension(translateData.File.Name);
-        
+        var fileContentType = translateData.File.ContentType!;
+        var fileExtension = Path.GetExtension(translateData.File.Name)!;
+
         if (!allowedContentTypes.Values.Contains(fileContentType) && !allowedContentTypes.Keys.Contains(fileExtension))
             throw new Exception("The file must be in one of the following formats: HTML, TXT, or DOCX.");
 
         var contentType = allowedContentTypes.Values.Contains(fileContentType)
             ? fileContentType
             : allowedContentTypes[fileExtension];
-        
+
+        var file = await _fileManagementClient.DownloadAsync(translateData.File);
+
+        var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+
         var request = new TranslateDocumentRequest
         {
             Document = new()
             {
-                Content = new(translateData.File.Bytes),
+                Content = memoryStream,
                 ContentType = contentType
             },
             Settings = new()
@@ -94,16 +107,15 @@ public class TranslateActions
 
         var translatedFileName = translateData.OutputFilename != null
             ? Path.GetFileNameWithoutExtension(translateData.OutputFilename) + fileExtension
-            : Path.GetFileNameWithoutExtension(translateData.File.Name) 
+            : Path.GetFileNameWithoutExtension(translateData.File.Name)
               + $"_{translatedFile.TargetLanguageCode}{fileExtension}";
-        
-        return new TranslatedFileResult
+
+        var uploadedFile = await _fileManagementClient.UploadAsync(translatedFile.TranslatedDocument.Content,
+            contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType, translatedFileName);
+
+        return new()
         {
-            File = new(translatedFile.TranslatedDocument.Content.ToArray())
-            {
-                ContentType = contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType,
-                Name = translatedFileName
-            }
+            File = uploadedFile
         };
     }
 
