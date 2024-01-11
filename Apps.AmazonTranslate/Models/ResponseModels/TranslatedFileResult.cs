@@ -1,10 +1,10 @@
 ﻿using Blackbird.Applications.Sdk.Common;
-using File = Blackbird.Applications.Sdk.Common.Files.File;
+using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.AmazonTranslate.Models.ResponseModels;
 
 public record TranslatedFileResult
 {
     [Display("Translated file")]
-    public File File { get; init; }
+    public FileReference File { get; init; }
 }

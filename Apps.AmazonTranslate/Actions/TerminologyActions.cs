@@ -7,17 +7,30 @@ using Apps.AmazonTranslate.Models.ResponseModels;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 
 namespace Apps.AmazonTranslate.Actions;
 
 [ActionList]
 public class TerminologyActions
 {
+    private readonly IFileManagementClient _fileManagementClient;
+
+    public TerminologyActions(IFileManagementClient fileManagementClient)
+    {
+        _fileManagementClient = fileManagementClient;
+    }
+    
     [Action("Import terminology", Description = "Creates or updates a custom terminology")]
     public async Task<TerminologyResponse> ImportTerminology(
         IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
         [ActionParameter] CreateTerminologyRequest requestData)
     {
+        var file = await _fileManagementClient.DownloadAsync(requestData.File);
+        
+        var memoryStream = new MemoryStream();
+        await file.CopyToAsync(memoryStream);
+        
         var translator = TranslatorFactory
             .CreateTranslator(authenticationCredentialsProviders.ToArray());
 
@@ -28,7 +41,7 @@ public class TerminologyActions
             MergeStrategy = MergeStrategy.OVERWRITE,
             TerminologyData = new()
             {
-                File = new(requestData.File.Bytes),
+                File = memoryStream,
                 Format = requestData.Format
             }
         };

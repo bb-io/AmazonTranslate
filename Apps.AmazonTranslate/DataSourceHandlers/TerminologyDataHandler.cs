@@ -1,4 +1,7 @@
-﻿using Apps.AmazonTranslate.Actions;
+﻿using Amazon.Translate.Model;
+using Apps.AmazonTranslate.Factories;
+using Apps.AmazonTranslate.Handlers;
+using Apps.AmazonTranslate.Models.ResponseModels;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Dynamic;
@@ -17,10 +20,28 @@ public class TerminologyDataHandler : BaseInvocable, IAsyncDataSourceHandler
 
     public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-        var actions = new TerminologyActions();
-        var terminologies = await actions.ListTerminologies(Creds);
+        string? next = null;
+        var results = new List<TerminologyResponse>();
+        var translator = TranslatorFactory
+            .CreateTranslator(Creds.ToArray());
+
+        do
+        {
+            var request = new ListTerminologiesRequest
+            {
+                NextToken = next,
+                MaxResults = 100
+            };
+
+            var response = await AwsRequestHandler.ExecuteAction(()
+                => translator.ListTerminologiesAsync(request));
+
+            next = response.NextToken;
+            results.AddRange(response.TerminologyPropertiesList
+                .Select(x => new TerminologyResponse(x)));
+        } while (!string.IsNullOrEmpty(next));
         
-        return terminologies.Terminologies
+        return results
             .Where(x => context.SearchString == null ||
                         x.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.CreatedAt)
