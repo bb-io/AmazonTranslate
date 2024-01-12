@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net.Mime;
+using System.Text;
 using Amazon.Translate;
 using Amazon.Translate.Model;
 using Apps.AmazonTranslate.Extensions;
@@ -11,6 +12,10 @@ using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
+using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
+using Blackbird.Applications.Sdk.Glossaries.Utils.Parsers;
+using Blackbird.Applications.Sdk.Utils.Extensions.Files;
+using RestSharp;
 
 namespace Apps.AmazonTranslate.Actions;
 
@@ -123,6 +128,65 @@ public class TerminologyActions
 
         var response = await AwsRequestHandler.ExecuteAction(() => translator.ImportTerminologyAsync(request));
         return new(response.TerminologyProperties);
+    }
+
+    #endregion
+
+    #region Export
+
+    [Action("Export glossary", Description = "Export a custom terminology")]
+    public async Task<ExportTerminologyAsTbxResponse> ExportTerminologyAsTbx(
+        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
+        [ActionParameter] TerminologyRequest input)
+    {
+        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
+
+        var request = new GetTerminologyRequest
+        {
+            Name = input.Terminology,
+            TerminologyDataFormat = TerminologyDataFormat.CSV
+        };
+
+        var response = await AwsRequestHandler.ExecuteAction(() => translator.GetTerminologyAsync(request));
+
+        var downloadTerminologyResponse =
+            await new RestClient().ExecuteAsync(new(response.TerminologyDataLocation.Location));
+
+        await using var terminologyMemoryStream = new MemoryStream(downloadTerminologyResponse.RawBytes);
+        var parsedTerminology = await terminologyMemoryStream.ParseCsvFile();
+        
+        var maxLength = parsedTerminology.Values.Max(list => list.Count);
+
+        var glossaryConceptEntries = new List<GlossaryConceptEntry>();
+
+        for (var i = 0; i < maxLength; i++)
+        {
+            var languageSections = new List<GlossaryLanguageSection>();
+
+            foreach (var terminology in parsedTerminology)
+            {
+                var languageCode = terminology.Key;
+                var terms = terminology.Value;
+
+                if (i < terms.Count)  // Check if the list contains the current index
+                    languageSections.Add(new(languageCode, new GlossaryTermSection[] { new(terms[i].Trim()) }));
+                else
+                    languageSections.Add(new(languageCode, new GlossaryTermSection[] { new(string.Empty) }));
+            }
+            
+            glossaryConceptEntries.Add(new(Guid.NewGuid().ToString(), languageSections));
+        }
+
+        var glossary = new Glossary(glossaryConceptEntries)
+        {
+            Title = response.TerminologyProperties.Name, 
+            SourceDescription = response.TerminologyProperties.Description
+        };
+
+        var tbxStream = glossary.ConvertToTBX();
+        var tbxFileReference = await _fileManagementClient.UploadAsync(tbxStream, MediaTypeNames.Text.Xml,
+            $"{response.TerminologyProperties.Name}.tbx");
+        return new(tbxFileReference);
     }
 
     #endregion
