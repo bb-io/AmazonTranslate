@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Text;
+using System.Text.RegularExpressions;
 using Amazon.Translate;
 using Amazon.Translate.Model;
 using Apps.AmazonTranslate.Extensions;
@@ -14,7 +15,6 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Parsers;
-using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using RestSharp;
 
 namespace Apps.AmazonTranslate.Actions;
@@ -45,7 +45,7 @@ public class TerminologyActions
 
         var request = new ImportTerminologyRequest
         {
-            Name = requestData.Name,
+            Name = SanitizeTerminologyName(requestData.Name),
             Description = requestData.Description,
             MergeStrategy = MergeStrategy.OVERWRITE,
             TerminologyData = new()
@@ -115,7 +115,8 @@ public class TerminologyActions
 
         var request = new ImportTerminologyRequest
         {
-            Name = (requestData.Name ?? glossary.Title) ?? Path.GetFileNameWithoutExtension(requestData.File.Name),
+            Name = SanitizeTerminologyName((requestData.Name ?? glossary.Title) ??
+                                           Path.GetFileNameWithoutExtension(requestData.File.Name)!),
             Description = requestData.Description ?? glossary.SourceDescription,
             MergeStrategy = MergeStrategy.OVERWRITE,
             TerminologyData = new()
@@ -263,4 +264,11 @@ public class TerminologyActions
     }
 
     #endregion
+
+    private string SanitizeTerminologyName(string name)
+    {
+        var trimmed = Regex.Replace(name, "^[^a-zA-Z0-9_-]+|[^a-zA-Z0-9_-]+$", "");
+        var sanitized = Regex.Replace(trimmed, "[^a-zA-Z0-9_-]+", "_");
+        return sanitized;
+    }
 }
