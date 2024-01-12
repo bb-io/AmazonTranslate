@@ -15,7 +15,8 @@
         <PackageReference Include="Blackbird.Applications.SDK.Extensions.FileManagement" Version="1.0.1" />
         <PackageReference Include="AWSSDK.S3" Version="3.7.107.1" />
         <PackageReference Include="AWSSDK.Translate" Version="3.7.201.4" />
-        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.12" />
+        <PackageReference Include="Blackbird.Applications.Sdk.Glossaries.Utils" Version="1.0.0-alpha4" />
+        <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.19" />
     </ItemGroup>
 
     <ItemGroup>
