@@ -81,8 +81,18 @@ public class TerminologyActions
         foreach (var entry in glossary.ConceptEntries)
         {
             var entryId = entry.Id;
-            var termsForEntry = entry.LanguageSections.ToDictionary(section => section.LanguageCode,
-                section => section.Terms.First().Term);
+            var termsForEntry = new Dictionary<string, string>();
+
+            foreach (var languageSection in entry.LanguageSections)
+            {
+                var languageCode =
+                    (supportedLanguages.Any(language => language.LanguageCode == languageSection.LanguageCode)
+                        ? languageSection.LanguageCode
+                        : languageSection.LanguageCode.Split('-')[0]).Trim();
+
+                if (!termsForEntry.TryGetValue(languageCode, out _))
+                    termsForEntry[languageCode] = languageSection.Terms.First().Term.Trim();
+            }
             
             if (termsForEntry.Count < 2) // skip if no translations
                 continue;
@@ -91,8 +101,7 @@ public class TerminologyActions
 
             foreach (var languageCode in termsForEntry.Keys)
             {
-                if (!languageHeaders.Contains(languageCode) 
-                    && supportedLanguages.Any(language => language.LanguageCode == languageCode))
+                if (!languageHeaders.Contains(languageCode))
                     languageHeaders.Add(languageCode);
             }
         }
