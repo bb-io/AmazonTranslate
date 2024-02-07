@@ -15,6 +15,7 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Parsers;
+using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using RestSharp;
 
 namespace Apps.AmazonTranslate.Actions;
@@ -80,14 +81,27 @@ public class TerminologyActions
         foreach (var entry in glossary.ConceptEntries)
         {
             var entryId = entry.Id;
-            var termsForEntry = entry.LanguageSections.ToDictionary(section => section.LanguageCode,
-                section => section.Terms.First().Term);
+            var termsForEntry = new Dictionary<string, string>();
+
+            foreach (var languageSection in entry.LanguageSections)
+            {
+                var languageCode =
+                    (supportedLanguages.Any(language => language.LanguageCode == languageSection.LanguageCode)
+                        ? languageSection.LanguageCode
+                        : languageSection.LanguageCode.Split('-')[0]).Trim();
+
+                if (!termsForEntry.TryGetValue(languageCode, out _))
+                    termsForEntry[languageCode] = languageSection.Terms.First().Term.Trim();
+            }
+            
+            if (termsForEntry.Count < 2) // skip if no translations
+                continue;
+            
             conceptEntryTerms[entryId] = termsForEntry;
 
             foreach (var languageCode in termsForEntry.Keys)
             {
-                if (!languageHeaders.Contains(languageCode) 
-                    && supportedLanguages.Any(language => language.LanguageCode == languageCode))
+                if (!languageHeaders.Contains(languageCode))
                     languageHeaders.Add(languageCode);
             }
         }
@@ -169,10 +183,8 @@ public class TerminologyActions
                 var languageCode = terminology.Key;
                 var terms = terminology.Value;
 
-                if (i < terms.Count)  // Check if the list contains the current index
-                    languageSections.Add(new(languageCode, new GlossaryTermSection[] { new(terms[i].Trim()) }));
-                else
-                    languageSections.Add(new(languageCode, new GlossaryTermSection[] { new(string.Empty) }));
+                if (i < terms.Count && !string.IsNullOrWhiteSpace(terms[i])) // Check if the list contains the current index and term for the language exists
+                    languageSections.Add(new(languageCode.Trim(), new GlossaryTermSection[] { new(terms[i].Trim()) }));
             }
             
             glossaryConceptEntries.Add(new(Guid.NewGuid().ToString(), languageSections));
@@ -184,7 +196,7 @@ public class TerminologyActions
             SourceDescription = response.TerminologyProperties.Description
         };
 
-        var tbxStream = glossary.ConvertToTBX();
+        await using var tbxStream = glossary.ConvertToTBX();
         var tbxFileReference = await _fileManagementClient.UploadAsync(tbxStream, MediaTypeNames.Text.Xml,
             $"{response.TerminologyProperties.Name}.tbx");
         return new(tbxFileReference);
