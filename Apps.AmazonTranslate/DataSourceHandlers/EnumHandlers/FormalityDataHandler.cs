@@ -1,12 +1,13 @@
-﻿using Blackbird.Applications.Sdk.Utils.Sdk.DataSourceHandlers;
+﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 
-public class FormalityDataHandler : EnumDataHandler
+public class FormalityDataHandler : IStaticDataSourceHandler
 {
-    protected override Dictionary<string, string> EnumValues => new()
-    {
-        { "FORMAL", "Formal" },
-        { "INFORMAL", "Informal" }
-    };
+    public Dictionary<string, string> GetData()
+        => new()
+        {
+            { "FORMAL", "Formal" },
+            { "INFORMAL", "Informal" }
+        };
 }

@@ -1,13 +1,14 @@
-﻿using Blackbird.Applications.Sdk.Utils.Sdk.DataSourceHandlers;
+﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 
-public class FormatDataHandler : EnumDataHandler
+public class FormatDataHandler : IStaticDataSourceHandler
 {
-    protected override Dictionary<string, string> EnumValues => new()
-    {
-        {"CSV", "CSV"},
-        {"TMX", "TMX"},
-        {"TSV", "TSV"}
-    };
+    public Dictionary<string, string> GetData()
+        => new()
+        {
+            { "CSV", "CSV" },
+            { "TMX", "TMX" },
+            { "TSV", "TSV" }
+        };
 }

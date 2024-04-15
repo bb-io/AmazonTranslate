@@ -1,6 +1,6 @@
 ﻿using Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Dynamic;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Files;
 
 namespace Apps.AmazonTranslate.Models.RequestModels;
@@ -14,9 +14,9 @@ public class CreateTerminologyRequest
     [Display("File", Description = "File in CSV, TMX, or TSV format.")]
     public FileReference File { get; set; }
     
-    [DataSource(typeof(FormatDataHandler))]
+    [StaticDataSource(typeof(FormatDataHandler))]
     public string Format { get; set; }
     
-    [DataSource(typeof(TerminologyDirectionalityDataHandler))]
+    [StaticDataSource(typeof(TerminologyDirectionalityDataHandler))]
     public string? Directionality { get; set; }
 }
