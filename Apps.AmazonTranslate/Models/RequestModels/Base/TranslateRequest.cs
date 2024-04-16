@@ -1,6 +1,7 @@
 ﻿using Apps.AmazonTranslate.DataSourceHandlers;
 using Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.AmazonTranslate.Models.RequestModels.Base;
@@ -17,7 +18,7 @@ public class TranslateRequest
 
     public IEnumerable<string>? Terminologies { get; set; }
 
-    [DataSource(typeof(FormalityDataHandler))]
+    [StaticDataSource(typeof(FormalityDataHandler))]
     public string? Formality { get; set; }
 
     [Display("Mask profanity?")] public bool? MaskProfanity { get; set; }

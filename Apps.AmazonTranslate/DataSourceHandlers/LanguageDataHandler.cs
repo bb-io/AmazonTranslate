@@ -1,7 +1,4 @@
-﻿using Amazon.Translate.Model;
-using Apps.AmazonTranslate.Extensions;
-using Apps.AmazonTranslate.Factories;
-using Apps.AmazonTranslate.Handlers;
+﻿using Apps.AmazonTranslate.Extensions;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Dynamic;

@@ -15,7 +15,6 @@ using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Parsers;
-using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using RestSharp;
 
 namespace Apps.AmazonTranslate.Actions;

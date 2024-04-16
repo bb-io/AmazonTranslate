@@ -1,12 +1,13 @@
-﻿using Blackbird.Applications.Sdk.Utils.Sdk.DataSourceHandlers;
+﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 
-public class TerminologyDirectionalityDataHandler : EnumDataHandler
+public class TerminologyDirectionalityDataHandler : IStaticDataSourceHandler
 {
-    protected override Dictionary<string, string> EnumValues => new()
-    {
-        { "UNI", "Uni-directional" },
-        { "MULTI", "Multi-directional" }
-    };
+    public Dictionary<string, string> GetData()
+        => new()
+        {
+            { "UNI", "Uni-directional" },
+            { "MULTI", "Multi-directional" }
+        };
 }
