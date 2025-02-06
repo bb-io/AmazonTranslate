@@ -8,17 +8,33 @@ Blackbird is the new automation backbone for the language technology industry. B
 
 Amazon Translate is a neural machine translation service that provides fast, high-quality language translation for various applications. It supports dozens of languages, allowing businesses to easily translate large volumes of text efficiently and integrate real-time translation into their websites, applications, and content workflows. The service is commonly used for translating customer communications, website localization, and multilingual data processing.
 
+## Before setting up
+
+Before you can connect you need to make sure that:
+
+- You have a **Amazon** account and you have the credentials to access it.
+- You have the `Access key` and `Access secret` for your Amazon Translate account.
+
+You can find how to get the `Access key` and `Access secret` [here](https://support.promax.com/knowledge/amazon-s3).
+
+## Connecting
+
+1. Navigate to Apps, and identify the **Amazon Translate** app. You can use search to find it.
+2. Click _Add Connection_.
+3. Name your connection for future reference e.g. 'My X connection'.
+4. Enter the `Access key`, `Access secret` and select a `Region` for your Amazon Translate account.
+5. Click _Connect_.
+6. Verify that connection was added successfully.
+
 ## Actions
 
 ### Job
 - **Start job** Start a translation job
-- **List translation jobs** List all translation jobs
-- **Describe a translation job** Describe a specific translation job
-- **Stop a translation job** Stop a specific translation job
+- **Get translation job** Describe a specific translation job
+- **Stop translation job** Stop a specific translation job
 
 ### ParallelData
 - **Create parallel data** Creates a parallel data resource in Amazon Translate
-- **List parallel data** Lists your parallel data resources in Amazon Translate
 - **Get parallel data** Provides information about a parallel data resource
 - **Update parallel data** Updates a previously created parallel data resource
 - **Delete parallel data** Deletes a parallel data resource in Amazon Translate
@@ -27,13 +43,11 @@ Amazon Translate is a neural machine translation service that provides fast, hig
 - **Import terminology** Creates or updates a custom terminology
 - **Import glossary** Creates or updates a custom terminology
 - **Export glossary** Export a custom terminology
-- **List terminologies** Lists custom terminologies associated with your account
-- **Get terminology** Retrieves a custom terminology
 - **Delete terminology** Retrieves a custom terminology
 
 ### Translate
-- **Translate** Translate a string
-- **Translate document** Translate a document
+- **Translate** Translate a simple text string
+- **Translate document** Translate a file
 
 ## Feedback
 

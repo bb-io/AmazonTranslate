@@ -3,45 +3,31 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Amazon.Translate;
 using Amazon.Translate.Model;
-using Apps.AmazonTranslate.Extensions;
-using Apps.AmazonTranslate.Factories;
-using Apps.AmazonTranslate.Handlers;
 using Apps.AmazonTranslate.Models.RequestModels;
 using Apps.AmazonTranslate.Models.ResponseModels;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Parsers;
 using RestSharp;
+using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.Actions;
 
 [ActionList]
-public class TerminologyActions
+public class TerminologyActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : AmazonInvocable(invocationContext)
 {
-    private readonly IFileManagementClient _fileManagementClient;
-
-    public TerminologyActions(IFileManagementClient fileManagementClient)
-    {
-        _fileManagementClient = fileManagementClient;
-    }
-
     #region Import
 
     [Action("Import terminology", Description = "Creates or updates a custom terminology")]
-    public async Task<TerminologyResponse> ImportTerminology(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] CreateTerminologyRequest requestData)
+    public async Task<TerminologyResponse> ImportTerminology([ActionParameter] CreateTerminologyRequest requestData)
     {
-        var file = await _fileManagementClient.DownloadAsync(requestData.File);
+        var file = await fileManagementClient.DownloadAsync(requestData.File);
         
         var memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
-        
-        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new ImportTerminologyRequest
         {
@@ -56,16 +42,14 @@ public class TerminologyActions
             }
         };
 
-        var response = await AwsRequestHandler.ExecuteAction(() => translator.ImportTerminologyAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.ImportTerminologyAsync(request));
         return new(response.TerminologyProperties);
     }
 
     [Action("Import glossary", Description = "Creates or updates a custom terminology")]
-    public async Task<TerminologyResponse> ImportTerminologyFromTbx(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] CreateTerminologyFromTbxRequest requestData)
+    public async Task<TerminologyResponse> ImportTerminologyFromTbx([ActionParameter] CreateTerminologyFromTbxRequest requestData)
     {
-        await using var fileStream = await _fileManagementClient.DownloadAsync(requestData.File);
+        await using var fileStream = await fileManagementClient.DownloadAsync(requestData.File);
         
         var glossary = await fileStream.ConvertFromTBX();
 
@@ -75,7 +59,7 @@ public class TerminologyActions
         var languageHeaders = new List<string>();
         var conceptEntryTerms = new Dictionary<string, Dictionary<string, string>>();
         
-        var supportedLanguages = await LanguageExtensions.GetAllLanguages(authenticationCredentialsProviders);
+        var supportedLanguages = await GetAllLanguages();
 
         foreach (var entry in glossary.ConceptEntries)
         {
@@ -123,8 +107,6 @@ public class TerminologyActions
 
         await writer.FlushAsync();
         memoryStream.Position = 0;
-        
-        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
 
         var request = new ImportTerminologyRequest
         {
@@ -140,7 +122,7 @@ public class TerminologyActions
             }
         };
 
-        var response = await AwsRequestHandler.ExecuteAction(() => translator.ImportTerminologyAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.ImportTerminologyAsync(request));
         return new(response.TerminologyProperties);
     }
 
@@ -149,19 +131,15 @@ public class TerminologyActions
     #region Export
 
     [Action("Export glossary", Description = "Export a custom terminology")]
-    public async Task<ExportTerminologyAsTbxResponse> ExportTerminologyAsTbx(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] TerminologyRequest input)
+    public async Task<ExportTerminologyAsTbxResponse> ExportTerminologyAsTbx([ActionParameter] TerminologyRequest input)
     {
-        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
-
         var request = new GetTerminologyRequest
         {
             Name = input.Terminology,
             TerminologyDataFormat = TerminologyDataFormat.CSV
         };
 
-        var response = await AwsRequestHandler.ExecuteAction(() => translator.GetTerminologyAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.GetTerminologyAsync(request));
 
         var downloadTerminologyResponse =
             await new RestClient().ExecuteAsync(new(response.TerminologyDataLocation.Location));
@@ -196,82 +174,24 @@ public class TerminologyActions
         };
 
         await using var tbxStream = glossary.ConvertToTBX();
-        var tbxFileReference = await _fileManagementClient.UploadAsync(tbxStream, MediaTypeNames.Text.Xml,
+        var tbxFileReference = await fileManagementClient.UploadAsync(tbxStream, MediaTypeNames.Text.Xml,
             $"{response.TerminologyProperties.Name}.tbx");
         return new(tbxFileReference);
     }
 
     #endregion
 
-    #region Get
-
-    [Action("List terminologies", Description = "Lists custom terminologies associated with your account")]
-    public async Task<AllTerminologiesResponse> ListTerminologies(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders)
-    {
-        string? next = null;
-        var results = new List<TerminologyResponse>();
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
-        do
-        {
-            var request = new ListTerminologiesRequest
-            {
-                NextToken = next,
-                MaxResults = 100
-            };
-
-            var response = await AwsRequestHandler.ExecuteAction(()
-                => translator.ListTerminologiesAsync(request));
-
-            next = response.NextToken;
-            results.AddRange(response.TerminologyPropertiesList
-                .Select(x => new TerminologyResponse(x)));
-        } while (!string.IsNullOrEmpty(next));
-
-        return new(results);
-    }
-
-    [Action("Get terminology", Description = "Retrieves a custom terminology")]
-    public async Task<TerminologyResponse> GetTerminology(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] GetTermRequest input)
-    {
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
-        var request = new GetTerminologyRequest
-        {
-            Name = input.Terminology,
-            TerminologyDataFormat = input.Format
-        };
-
-        var response = await AwsRequestHandler.ExecuteAction(()
-            => translator.GetTerminologyAsync(request));
-
-        return new(response.TerminologyProperties);
-    }
-
-    #endregion
-
     #region Delete
 
-    [Action("Delete terminology", Description = "Retrieves a custom terminology")]
-    public Task DeleteTerminology(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] TerminologyRequest terminology)
+    [Action("Delete terminology", Description = "Deletes a terminology resource")]
+    public Task DeleteTerminology([ActionParameter] TerminologyRequest terminology)
     {
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
         var request = new DeleteTerminologyRequest
         {
             Name = terminology.Terminology
         };
 
-        return AwsRequestHandler.ExecuteAction(()
-            => translator.DeleteTerminologyAsync(request));
+        return ExecuteAction(() => TranslateClient.DeleteTerminologyAsync(request));
     }
 
     #endregion

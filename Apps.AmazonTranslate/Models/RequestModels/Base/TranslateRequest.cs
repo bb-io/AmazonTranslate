@@ -16,6 +16,7 @@ public class TranslateRequest
     [DataSource(typeof(LanguageDataHandler))]
     public string TargetLanguageCode { get; set; }
 
+    [DataSource(typeof(TerminologyDataHandler))]
     public IEnumerable<string>? Terminologies { get; set; }
 
     [StaticDataSource(typeof(FormalityDataHandler))]

@@ -1,0 +1,8 @@
+{
+  "ConnectionDefinition": {
+    "access_key": "",
+    "access_secret": "",
+    "region": "us-west-2"
+  },
+  "TestFolder": "C:\\Users\\..."
+}

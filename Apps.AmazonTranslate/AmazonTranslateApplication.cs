@@ -11,12 +11,6 @@ public class AmazonTranslateApplication : IApplication, ICategoryProvider
         set { }
     }
 
-    public string Name
-    {
-        get => "Amazon Translate";
-        set { }
-    }
-
     public T GetInstance<T>()
     {
         throw new NotImplementedException();

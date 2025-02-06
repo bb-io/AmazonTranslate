@@ -8,8 +8,7 @@ namespace Apps.AmazonTranslate.Models.RequestModels;
 
 public class StartJobRequest
 {
-    [Display("Job")]
-    [DataSource(typeof(JobNameDataHandler))]
+    [Display("Job name")]
     public string JobName { get; set; }
 
     [Display("S3 source uri")] public string S3SourceLocation { get; set; }

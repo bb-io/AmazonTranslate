@@ -1,30 +1,20 @@
-﻿using Apps.AmazonTranslate.Actions;
-using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Authentication;
+﻿using Amazon.Translate.Model;
 using Blackbird.Applications.Sdk.Common.Dynamic;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers;
 
-public class ParallelDataHandler : BaseInvocable, IAsyncDataSourceHandler
+public class ParallelDataHandler(InvocationContext invocationContext) : AmazonInvocable(invocationContext), IAsyncDataSourceItemHandler
 {
-    private IEnumerable<AuthenticationCredentialsProvider> Creds =>
-        InvocationContext.AuthenticationCredentialsProviders;
-    
-    public ParallelDataHandler(InvocationContext invocationContext) : base(invocationContext)
+    public async Task<IEnumerable<DataSourceItem>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-    }
+        var data = await ExecutePaginated(TranslateClient.Paginators.ListParallelData(new ListParallelDataRequest()).Responses, (x) => x.ParallelDataPropertiesList);
 
-    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
-    {
-        var actions = new ParallelDataActions();
-        var parallelData = await actions.ListParallelData(Creds);
-        
-        return parallelData.ParallelData
+        return data
             .Where(x => context.SearchString == null ||
                         x.Name.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(x => x.CreatedAt)
             .Take(20)
-            .ToDictionary(x => x.Name, x => x.Name);
+            .Select(x => new DataSourceItem(x.Name, x.Name));
     }
 }
