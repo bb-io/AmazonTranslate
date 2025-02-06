@@ -6,6 +6,7 @@ using Apps.AmazonTranslate.Models.ResponseModels;
 using Apps.AmazonTranslate.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 
@@ -55,7 +56,7 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
         var fileExtension = Path.GetExtension(translateData.File.Name)!;
 
         if (!allowedContentTypes.Values.Contains(fileContentType) && !allowedContentTypes.Keys.Contains(fileExtension))
-            throw new Exception("The file must be in one of the following formats: HTML, TXT, or DOCX.");
+            throw new PluginMisconfigurationException("The file must be in one of the following formats: HTML, TXT, or DOCX.");
 
         var contentType = allowedContentTypes.Values.Contains(fileContentType)
             ? fileContentType
