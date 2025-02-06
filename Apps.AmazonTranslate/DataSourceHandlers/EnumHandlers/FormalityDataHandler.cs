@@ -1,13 +1,16 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 
-public class FormalityDataHandler : IStaticDataSourceHandler
+public class FormalityDataHandler : IStaticDataSourceItemHandler
 {
-    public Dictionary<string, string> GetData()
-        => new()
+    public IEnumerable<DataSourceItem> GetData()
+    {
+        return new List<DataSourceItem>()
         {
-            { "FORMAL", "Formal" },
-            { "INFORMAL", "Informal" }
+            new DataSourceItem( "FORMAL", "Formal" ),
+            new DataSourceItem( "INFORMAL", "Informal" ),
         };
+    }
 }

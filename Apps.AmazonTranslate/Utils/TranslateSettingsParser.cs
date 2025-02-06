@@ -1,4 +1,5 @@
 ﻿using Amazon.Translate;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 
 namespace Apps.AmazonTranslate.Utils;
 
@@ -12,7 +13,7 @@ public static class TranslateSettingsParser
             "INFORMAL" => Formality.INFORMAL,
             null => null,
             "" => null,
-            _ => throw new Exception("Formality field values can be FORMAL or INFORMAL")
+            _ => throw new PluginMisconfigurationException("Formality field values can be FORMAL or INFORMAL")
         };
     } 
 }

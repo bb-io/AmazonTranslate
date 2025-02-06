@@ -1,34 +1,23 @@
 ﻿using System.Net.Mime;
 using Amazon.Translate;
 using Amazon.Translate.Model;
-using Apps.AmazonTranslate.Factories;
-using Apps.AmazonTranslate.Handlers;
 using Apps.AmazonTranslate.Models.RequestModels;
 using Apps.AmazonTranslate.Models.ResponseModels;
 using Apps.AmazonTranslate.Utils;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 
 namespace Apps.AmazonTranslate.Actions;
 
 [ActionList]
-public class TranslateActions
+public class TranslateActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : AmazonInvocable(invocationContext)
 {
-    private readonly IFileManagementClient _fileManagementClient;
-
-    public TranslateActions(IFileManagementClient fileManagementClient)
-    {
-        _fileManagementClient = fileManagementClient;
-    }
-
     #region Actions
 
     [Action("Translate", Description = "Translate a string")]
-    public async Task<TranslatedStringResult> Translate(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] TranslateStringRequest translateData)
+    public async Task<TranslatedStringResult> Translate([ActionParameter] TranslateStringRequest translateData)
     {
         var request = new TranslateTextRequest
         {
@@ -45,10 +34,7 @@ public class TranslateActions
             TerminologyNames = translateData.Terminologies?.ToList(),
             Text = translateData.Text
         };
-
-        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
-        var translateResult = await AwsRequestHandler.ExecuteAction<TranslateTextResponse>(()
-            => translator.TranslateTextAsync(request));
+        var translateResult = await ExecuteAction<TranslateTextResponse>(()=> TranslateClient.TranslateTextAsync(request));
 
         return new TranslatedStringResult
         {
@@ -57,9 +43,7 @@ public class TranslateActions
     }
 
     [Action("Translate document", Description = "Translate a document")]
-    public async Task<TranslatedFileResult> TranslateDocument(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] TranslateFileRequest translateData)
+    public async Task<TranslatedFileResult> TranslateDocument([ActionParameter] TranslateFileRequest translateData)
     {
         var allowedContentTypes = new Dictionary<string, string>
         {
@@ -77,7 +61,7 @@ public class TranslateActions
             ? fileContentType
             : allowedContentTypes[fileExtension];
 
-        var file = await _fileManagementClient.DownloadAsync(translateData.File);
+        var file = await fileManagementClient.DownloadAsync(translateData.File);
 
         var memoryStream = new MemoryStream();
         await file.CopyToAsync(memoryStream);
@@ -101,16 +85,14 @@ public class TranslateActions
             TargetLanguageCode = translateData.TargetLanguageCode,
         };
 
-        var translator = TranslatorFactory.CreateTranslator(authenticationCredentialsProviders.ToArray());
-        var translatedFile = await AwsRequestHandler.ExecuteAction<TranslateDocumentResponse>(()
-            => translator.TranslateDocumentAsync(request));
+        var translatedFile = await ExecuteAction<TranslateDocumentResponse>(()=> TranslateClient.TranslateDocumentAsync(request));
 
         var translatedFileName = translateData.OutputFilename != null
             ? Path.GetFileNameWithoutExtension(translateData.OutputFilename) + fileExtension
             : Path.GetFileNameWithoutExtension(translateData.File.Name)
               + $"_{translatedFile.TargetLanguageCode}{fileExtension}";
 
-        var uploadedFile = await _fileManagementClient.UploadAsync(translatedFile.TranslatedDocument.Content,
+        var uploadedFile = await fileManagementClient.UploadAsync(translatedFile.TranslatedDocument.Content,
             contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType, translatedFileName);
 
         return new()

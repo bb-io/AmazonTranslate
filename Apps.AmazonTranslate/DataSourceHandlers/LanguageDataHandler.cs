@@ -1,27 +1,17 @@
-﻿using Apps.AmazonTranslate.Extensions;
-using Blackbird.Applications.Sdk.Common;
-using Blackbird.Applications.Sdk.Common.Authentication;
-using Blackbird.Applications.Sdk.Common.Dynamic;
+﻿using Blackbird.Applications.Sdk.Common.Dynamic;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers;
 
-public class LanguageDataHandler : BaseInvocable, IAsyncDataSourceHandler
+public class LanguageDataHandler(InvocationContext invocationContext) : AmazonInvocable(invocationContext), IAsyncDataSourceItemHandler
 {
-    private IEnumerable<AuthenticationCredentialsProvider> Creds =>
-        InvocationContext.AuthenticationCredentialsProviders;
-
-    public LanguageDataHandler(InvocationContext invocationContext) : base(invocationContext)
+    public async Task<IEnumerable<DataSourceItem>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
     {
-    }
-
-    public async Task<Dictionary<string, string>> GetDataAsync(DataSourceContext context, CancellationToken cancellationToken)
-    {
-        var languages = await LanguageExtensions.GetAllLanguages(Creds);
+        var languages = await GetAllLanguages();
 
         return languages
             .Where(x => context.SearchString == null ||
                         x.LanguageName.Contains(context.SearchString, StringComparison.OrdinalIgnoreCase))
-            .ToDictionary(x => x.LanguageCode, x => x.LanguageName);
+            .Select(x => new DataSourceItem(x.LanguageCode, x.LanguageName));
     }
 }

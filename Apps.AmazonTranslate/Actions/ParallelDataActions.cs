@@ -1,21 +1,17 @@
 ﻿using Amazon.Translate.Model;
-using Apps.AmazonTranslate.Factories;
-using Apps.AmazonTranslate.Handlers;
 using Apps.AmazonTranslate.Models.RequestModels;
 using Apps.AmazonTranslate.Models.ResponseModels;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
-using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.Actions;
 
 [ActionList]
-public class ParallelDataActions
+public class ParallelDataActions(InvocationContext invocationContext) : AmazonInvocable(invocationContext)
 {
     [Action("Create parallel data", Description = "Creates a parallel data resource in Amazon Translate")]
-    public async Task<ParallelDataResponse> CreateParallelData(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] CreatePDRequest requestData)
+    public async Task<ParallelDataResponse> CreateParallelData([ActionParameter] CreatePDRequest requestData)
     {
         var request = new CreateParallelDataRequest
         {
@@ -28,70 +24,27 @@ public class ParallelDataActions
             }
         };
 
-        var translator = await 
-            TranslatorFactory.CreateBucketTranslator(authenticationCredentialsProviders.ToArray(), requestData.S3Uri);
-
-        var response = await AwsRequestHandler.ExecuteAction(()
-            => translator.CreateParallelDataAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.CreateParallelDataAsync(request));
 
         return new(response.Name, response.Status);
-    }
-
-    [Action("List parallel data", Description = "Lists your parallel data resources in Amazon Translate")]
-    public async Task<AllParallelDataResponse> ListParallelData(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders)
-    {
-        string? next = null;
-        var results = new List<FullParallelDataResponse>();
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
-        do
-        {
-            var request = new ListParallelDataRequest
-            {
-                NextToken = next,
-                MaxResults = 100
-            };
-
-            var response = await AwsRequestHandler.ExecuteAction(()
-                => translator.ListParallelDataAsync(request));
-
-            next = response.NextToken;
-            results.AddRange(response.ParallelDataPropertiesList
-                .Select(x => new FullParallelDataResponse(x)));
-        } while (!string.IsNullOrEmpty(next));
-
-
-        return new(results);
-    }
+    }   
 
     [Action("Get parallel data", Description = "Provides information about a parallel data resource")]
-    public async Task<FullParallelDataResponse> GetParallelData(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] ParallelDataRequest pd)
+    public async Task<FullParallelDataResponse> GetParallelData([ActionParameter] ParallelDataRequest pd)
     {
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
         var request = new GetParallelDataRequest
         {
             Name = pd.PdName
         };
         
-        var response = await AwsRequestHandler.ExecuteAction(() => translator.GetParallelDataAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.GetParallelDataAsync(request));
 
         return new(response.ParallelDataProperties);
     }
     
     [Action("Update parallel data", Description = "Updates a previously created parallel data resource")]
-    public async Task<ParallelDataResponse> UpdateParallelData(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] UpdatePdRequest requestData)
+    public async Task<ParallelDataResponse> UpdateParallelData([ActionParameter] UpdatePdRequest requestData)
     {
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
         var request = new UpdateParallelDataRequest
         {
             Name = requestData.Name,
@@ -103,24 +56,19 @@ public class ParallelDataActions
             }
         };
         
-        var response = await AwsRequestHandler.ExecuteAction(() => translator.UpdateParallelDataAsync(request));
+        var response = await ExecuteAction(() => TranslateClient.UpdateParallelDataAsync(request));
 
         return new(response.Name, response.Status);
     }    
     
     [Action("Delete parallel data", Description = "Deletes a parallel data resource in Amazon Translate")]
-    public Task DeleteParallelData(
-        IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders,
-        [ActionParameter] ParallelDataRequest pd)
+    public Task DeleteParallelData([ActionParameter] ParallelDataRequest pd)
     {
-        var translator = TranslatorFactory
-            .CreateTranslator(authenticationCredentialsProviders.ToArray());
-
         var request = new DeleteParallelDataRequest
         {
             Name = pd.PdName
         };
         
-        return AwsRequestHandler.ExecuteAction(() => translator.DeleteParallelDataAsync(request));
+        return ExecuteAction(() => TranslateClient.DeleteParallelDataAsync(request));
     }
 }

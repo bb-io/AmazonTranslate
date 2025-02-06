@@ -1,14 +1,17 @@
 ﻿using Blackbird.Applications.Sdk.Common.Dictionaries;
+using Blackbird.Applications.Sdk.Common.Dynamic;
 
 namespace Apps.AmazonTranslate.DataSourceHandlers.EnumHandlers;
 
-public class FormatDataHandler : IStaticDataSourceHandler
+public class FormatDataHandler : IStaticDataSourceItemHandler
 {
-    public Dictionary<string, string> GetData()
-        => new()
+    public IEnumerable<DataSourceItem> GetData()
+    {
+        return new List<DataSourceItem>()
         {
-            { "CSV", "CSV" },
-            { "TMX", "TMX" },
-            { "TSV", "TSV" }
+            new DataSourceItem( "CSV", "CSV" ),
+            new DataSourceItem( "TMX", "TMX" ),
+            new DataSourceItem( "TSV", "TSV") ,
         };
+    }
 }
