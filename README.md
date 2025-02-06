@@ -26,6 +26,8 @@ You can find how to get the `Access key` and `Access secret` [here](https://supp
 5. Click _Connect_.
 6. Verify that connection was added successfully.
 
+![1738861751328](image/README/1738861751328.png)
+
 ## Actions
 
 ### Job
