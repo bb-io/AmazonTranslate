@@ -10,11 +10,11 @@ public class TranslateRequest
 {
     [Display("Source language")]
     [DataSource(typeof(LanguageDataHandler))]
-    public string? SourceLanguageCode { get; set; }
+    public string? SourceLanguage { get; set; }
 
     [Display("Target language")]
     [DataSource(typeof(LanguageDataHandler))]
-    public string TargetLanguageCode { get; set; }
+    public string TargetLanguage { get; set; }
 
     [DataSource(typeof(TerminologyDataHandler))]
     public IEnumerable<string>? Terminologies { get; set; }

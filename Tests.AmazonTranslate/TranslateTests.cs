@@ -2,6 +2,7 @@
 using Apps.AmazonTranslate.Connections;
 using Apps.AmazonTranslate.Models.RequestModels;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Files;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ public class TranslateTests : TestBase
     {
         var actions = new TranslateActions(InvocationContext, FileManager);
 
-        var result = await actions.Translate(new TranslateStringRequest { Text = ExampleText, TargetLanguageCode = "nl" });
+        var result = await actions.Translate(new TranslateStringRequest { Text = ExampleText, TargetLanguage = "nl" });
         Console.WriteLine(result.TranslatedText);
         Assert.IsNotNull(result.TranslatedText);
     }
@@ -31,8 +32,18 @@ public class TranslateTests : TestBase
     {
         var actions = new TranslateActions(InvocationContext, FileManager);
 
-        var result = await actions.Translate(new TranslateStringRequest { Text = ExampleText, TargetLanguageCode = "nl", Terminologies = new List<string> { } });
+        var result = await actions.Translate(new TranslateStringRequest { Text = ExampleText, TargetLanguage = "nl", Terminologies = new List<string> { } });
         Console.WriteLine(result.TranslatedText);
         Assert.IsNotNull(result.TranslatedText);
+    }
+
+    [TestMethod]
+    public async Task Translate_file_works()
+    {
+        var actions = new TranslateActions(InvocationContext, FileManager);
+
+        var file = new FileReference { Name = "contentful.html" };
+        var result = await actions.TranslateContent(new TranslateFileRequest { File = file, TargetLanguage = "nl", Terminologies = new List<string> { } });
+        Assert.AreEqual(result.File.Name, "contentful.html.xliff");
     }
 }
