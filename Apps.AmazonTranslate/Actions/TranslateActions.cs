@@ -53,31 +53,29 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
     {
         try
         {
-            var stream = await fileManagementClient.DownloadAsync(translateData.File);
-            var content = await Transformation.Parse(stream);
-            var batches = content.GetSegments().Where(x => !x.IsIgnorbale && x.IsInitial).Batch(5);
 
-            foreach(var batch in batches)
+            async Task<IEnumerable<TranslatedStringResult>> BatchTranslate(IEnumerable<Segment> batch)
             {
-                var results = await Task.WhenAll(batch.Select(x => Translate(new TranslateStringRequest { 
-                    Text = x.GetSource(), 
-                    Formality = translateData.Formality, 
+                return await Task.WhenAll(batch.Select(x => Translate(new TranslateStringRequest
+                {
+                    Text = x.GetSource(),
+                    Formality = translateData.Formality,
                     MaskProfanity = translateData.MaskProfanity,
                     SourceLanguage = translateData.SourceLanguage,
                     TargetLanguage = translateData.TargetLanguage,
                     Terminologies = translateData.Terminologies,
                     TurnOnBrevity = translateData.TurnOnBrevity,
                 })));
+            }
 
-                var batchAsArray = batch.ToArray();
-                for (int i = 0; i < results.Length; i++)
-                {
-                    var segment = batchAsArray[i];
-                    var result = results[i];
+            var stream = await fileManagementClient.DownloadAsync(translateData.File);
+            var content = await Transformation.Parse(stream);
+            var segmentTranslations = await content.GetSegments().Where(x => !x.IsIgnorbale && x.IsInitial).Batch(5).Process(BatchTranslate);
 
-                    segment.SetTarget(result.TranslatedText);
-                    segment.State = SegmentState.Translated;
-                }
+            foreach (var (segment, translation) in segmentTranslations)
+            {
+                segment.SetTarget(translation.TranslatedText);
+                segment.State = SegmentState.Translated;
             }
 
             if (translateData.OutputFileHandling == null || translateData.OutputFileHandling == "xliff")
