@@ -10,6 +10,7 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Extensions;
@@ -22,6 +23,7 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
 {
     #region Actions
 
+    [BlueprintActionDefinition(BlueprintAction.TranslateText)]
     [Action("Translate text", Description = "Translate a small text string")]
     public async Task<TranslatedStringResult> Translate([ActionParameter] TranslateStringRequest translateData)
     {
@@ -48,6 +50,7 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
         };
     }
 
+    [BlueprintActionDefinition(BlueprintAction.TranslateFile)]
     [Action("Translate", Description = "Translate a file containing content")]
     public async Task<TranslatedFileResult> TranslateContent([ActionParameter] TranslateFileRequest translateData)
     {
