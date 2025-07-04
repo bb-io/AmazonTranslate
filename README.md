@@ -30,12 +30,22 @@ You can find how to get the `Access key` and `Access secret` [here](https://supp
 
 ## Actions
 
+### Translate
+- **Translate** Translate interopability compatible files in Blackbird interoperability mode. Can also be used to translate other file types that Amazon supports. If you're only translating text (strings) then use *Translate text* instead. Advanced settings:
+  - **File translation strategy**: Select whether to use Amazon's own file processing capabilities or use Blackbird interoperability mode (the latter the the default mode).
+  - **Output file handling**: If using Blackbird's interoperability mode, this determines the format of the output file. The default Blackbird behavior is to convert to XLIFF for future steps. You can change it to output the original file format (if you don't want to continue language operationts after this step).  
+  - **Terminologies**: Select pre-uploaded terminology sources from Amazon.
+  - **Formality**: Indicates whether the translation should be formal (depends on the language).
+  - **Mask profanity**: If selected, profanity will be masked.
+  - **Turn on brevity**: If selected, Amazon's brevity feature will be enabled.
+- **Translate text** Translate a single text string. Useful when translating small messages. For larger content and files use *Translate* instead.
+
 ### Job
 - **Start job** Start a translation job
 - **Get translation job** Describe a specific translation job
 - **Stop translation job** Stop a specific translation job
 
-### ParallelData
+### Parallel Data
 - **Create parallel data** Creates a parallel data resource in Amazon Translate
 - **Get parallel data** Provides information about a parallel data resource
 - **Update parallel data** Updates a previously created parallel data resource
@@ -47,9 +57,11 @@ You can find how to get the `Access key` and `Access secret` [here](https://supp
 - **Export glossary** Export a custom terminology
 - **Delete terminology** Retrieves a custom terminology
 
-### Translate
-- **Translate** Translate a simple text string
-- **Translate document** Translate a file
+## Example
+
+![1751617430564](image/README/1751617430564.png)
+
+In this example, a Bird is triggered when new content is published on Contentful. After translating this content with Amazon, an MTQE step is used to determine the best method for post-editing the content. After either human or machine post editing is done, the content is uploaded back to Contentful.
 
 ## Feedback
 
