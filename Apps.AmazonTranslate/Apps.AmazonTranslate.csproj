@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Amazon Translate</Product>
         <Description>Fluent and accurate machine translation</Description>
-        <Version>1.3.3</Version>
+        <Version>1.3.4</Version>
         <AssemblyName>Apps.AmazonTranslate</AssemblyName>
     </PropertyGroup>
 
