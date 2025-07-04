@@ -12,6 +12,7 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Constants;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
@@ -51,55 +52,63 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
     }
 
     [BlueprintActionDefinition(BlueprintAction.TranslateFile)]
-    [Action("Translate", Description = "Translate a file containing content")]
-    public async Task<TranslatedFileResult> TranslateContent([ActionParameter] TranslateFileRequest translateData)
+    [Action("Translate", Description = "Translate a file containing content retrieved from a CMS or file storage. The output can be used in compatible actions.")]
+    public async Task<TranslatedFileResult> TranslateContent([ActionParameter] TranslateFileRequest input)
     {
+        if (input.FileTranslationStrategy == "amazon")
+        {
+            return await TranslateDocument(input);
+        }
+
         try
         {
-
-            async Task<IEnumerable<TranslatedStringResult>> BatchTranslate(IEnumerable<Segment> batch)
-            {
-                return await Task.WhenAll(batch.Select(x => Translate(new TranslateStringRequest
-                {
-                    Text = x.GetSource(),
-                    Formality = translateData.Formality,
-                    MaskProfanity = translateData.MaskProfanity,
-                    SourceLanguage = translateData.SourceLanguage,
-                    TargetLanguage = translateData.TargetLanguage,
-                    Terminologies = translateData.Terminologies,
-                    TurnOnBrevity = translateData.TurnOnBrevity,
-                })));
-            }
-
-            var stream = await fileManagementClient.DownloadAsync(translateData.File);
-            var content = await Transformation.Parse(stream);
-            var segmentTranslations = await content.GetSegments().Where(x => !x.IsIgnorbale && x.IsInitial).Batch(5).Process(BatchTranslate);
-
-            foreach (var (segment, translation) in segmentTranslations)
-            {
-                segment.SetTarget(translation.TranslatedText);
-                segment.State = SegmentState.Translated;
-            }
-
-            if (translateData.OutputFileHandling == null || translateData.OutputFileHandling == "xliff")
-            {
-                var xliffStream = content.Serialize().ToStream();
-                var fileName = translateData.File.Name.EndsWith("xliff") || translateData.File.Name.EndsWith("xlf") ? translateData.File.Name : translateData.File.Name + ".xliff";
-                var uploadedFile = await fileManagementClient.UploadAsync(xliffStream, "application/xliff+xml", fileName);
-                return new TranslatedFileResult { File = uploadedFile };
-            }
-            else
-            {
-                var resultStream = content.Target().Serialize().ToStream();
-                var uploadedFile = await fileManagementClient.UploadAsync(resultStream, translateData.File.ContentType, translateData.File.Name);
-                return new TranslatedFileResult { File = uploadedFile };
-            }
-
+            return await TranslateWithBlackbird(input);
         }
-        catch (Exception)
+        catch (Exception e)
         {
-            return await TranslateDocument(translateData);
+            if (e.Message.Contains("This file format is not supported"))
+            {
+                throw new PluginMisconfigurationException("The file format is not supported by the Blackbird interoperable setting. Try setting the file translation strategy to Amazon native.");
+            }
+            throw;
         }
+    }
+
+    private async Task<TranslatedFileResult> TranslateWithBlackbird([ActionParameter] TranslateFileRequest translateData)
+    {
+        async Task<IEnumerable<TranslatedStringResult>> BatchTranslate(IEnumerable<Segment> batch)
+        {
+            return await Task.WhenAll(batch.Select(x => Translate(new TranslateStringRequest
+            {
+                Text = x.GetSource(),
+                Formality = translateData.Formality,
+                MaskProfanity = translateData.MaskProfanity,
+                SourceLanguage = translateData.SourceLanguage,
+                TargetLanguage = translateData.TargetLanguage,
+                Terminologies = translateData.Terminologies,
+                TurnOnBrevity = translateData.TurnOnBrevity,
+            })));
+        }
+
+        var stream = await fileManagementClient.DownloadAsync(translateData.File);
+        var content = await Transformation.Parse(stream, translateData.File.Name);
+        var segmentTranslations = await content.GetSegments().Where(x => !x.IsIgnorbale && x.IsInitial).Batch(5).Process(BatchTranslate);
+
+        foreach (var (segment, translation) in segmentTranslations)
+        {
+            segment.SetTarget(translation.TranslatedText);
+            segment.State = SegmentState.Translated;
+        }
+
+        if (translateData.OutputFileHandling == "original")
+        {
+            var target = content.Target();
+            return new TranslatedFileResult { File = await fileManagementClient.UploadAsync(target.Serialize().ToStream(), target.OriginalMediaType, target.OriginalName) };
+        }
+
+        content.SourceLanguage ??= translateData.SourceLanguage;
+        content.TargetLanguage ??= translateData.TargetLanguage;
+        return new TranslatedFileResult { File = await fileManagementClient.UploadAsync(content.Serialize().ToStream(), MediaTypes.Xliff, content.XliffFileName) };
     }
 
     private async Task<TranslatedFileResult> TranslateDocument([ActionParameter] TranslateFileRequest translateData)
@@ -146,13 +155,8 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
 
         var translatedFile = await ExecuteAction<TranslateDocumentResponse>(() => TranslateClient.TranslateDocumentAsync(request));
 
-        var translatedFileName = translateData.OutputFilename != null
-            ? Path.GetFileNameWithoutExtension(translateData.OutputFilename) + fileExtension
-            : Path.GetFileNameWithoutExtension(translateData.File.Name)
-              + $"_{translatedFile.TargetLanguageCode}{fileExtension}";
-
         var uploadedFile = await fileManagementClient.UploadAsync(translatedFile.TranslatedDocument.Content,
-            contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType, translatedFileName);
+            contentType == MediaTypeNames.Text.Plain ? MediaTypeNames.Text.RichText : contentType, translateData.File.Name);
 
         return new()
         {
