@@ -32,7 +32,7 @@ You can find how to get the `Access key` and `Access secret` [here](https://supp
 
 ### Translate
 - **Translate** Translate interopability compatible files in Blackbird interoperability mode. Can also be used to translate other file types that Amazon supports. If you're only translating text (strings) then use *Translate text* instead. Advanced settings:
-  - **File translation strategy**: Select whether to use Amazon's own file processing capabilities or use Blackbird interoperability mode (the latter the the default mode).
+  - **File translation strategy**: Select whether to use Amazon's own file processing capabilities or use Blackbird interoperability mode (the latter the default mode).
   - **Output file handling**: If using Blackbird's interoperability mode, this determines the format of the output file. The default Blackbird behavior is to convert to XLIFF for future steps. You can change it to output the original file format (if you don't want to continue language operationts after this step).  
   - **Terminologies**: Select pre-uploaded terminology sources from Amazon.
   - **Formality**: Indicates whether the translation should be formal (depends on the language).
