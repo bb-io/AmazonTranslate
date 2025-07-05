@@ -16,7 +16,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.Actions;
 
-[ActionList]
+[ActionList("Terminology")]
 public class TerminologyActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : AmazonInvocable(invocationContext)
 {
     #region Import

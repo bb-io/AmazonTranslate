@@ -7,7 +7,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.Actions;
 
-[ActionList]
+[ActionList("Jobs")]
 public class JobActions(InvocationContext invocationContext) : AmazonInvocable(invocationContext)
 {
     [Action("Start translation job", Description = "Start a translation job")]
