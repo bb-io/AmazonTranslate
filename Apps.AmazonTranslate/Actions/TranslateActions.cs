@@ -19,7 +19,7 @@ using Blackbird.Filters.Transformations;
 
 namespace Apps.AmazonTranslate.Actions;
 
-[ActionList]
+[ActionList("Translation")]
 public class TranslateActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : AmazonInvocable(invocationContext)
 {
     #region Actions

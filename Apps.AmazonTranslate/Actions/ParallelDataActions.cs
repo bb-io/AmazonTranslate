@@ -7,7 +7,7 @@ using Blackbird.Applications.Sdk.Common.Invocation;
 
 namespace Apps.AmazonTranslate.Actions;
 
-[ActionList]
+[ActionList( "Parallel data")]
 public class ParallelDataActions(InvocationContext invocationContext) : AmazonInvocable(invocationContext)
 {
     [Action("Create parallel data", Description = "Creates a parallel data resource in Amazon Translate")]
