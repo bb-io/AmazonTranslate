@@ -66,11 +66,7 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
         }
         catch (Exception e)
         {
-            if (e.Message.Contains("This file format is not supported"))
-            {
-                throw new PluginMisconfigurationException("The file format is not supported by the Blackbird interoperable setting. Try setting the file translation strategy to Amazon native.");
-            }
-            throw;
+            return await TranslateDocument(input);
         }
     }
 
