@@ -64,7 +64,7 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
         {
             return await TranslateWithBlackbird(input);
         }
-        catch (Exception e)
+        catch (NotImplementedException)
         {
             return await TranslateDocument(input);
         }
@@ -72,11 +72,11 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
 
     private async Task<TranslatedFileResult> TranslateWithBlackbird([ActionParameter] TranslateFileRequest translateData)
     {
-        async Task<IEnumerable<TranslatedStringResult>> BatchTranslate(IEnumerable<Segment> batch)
+        async Task<IEnumerable<TranslatedStringResult>> BatchTranslate(IEnumerable<(Unit Unit, Segment Segment)> batch)
         {
             return await Task.WhenAll(batch.Select(x => Translate(new TranslateStringRequest
             {
-                Text = x.GetSource(),
+                Text = x.Segment.GetSource(),
                 Formality = translateData.Formality,
                 MaskProfanity = translateData.MaskProfanity,
                 SourceLanguage = translateData.SourceLanguage,
@@ -88,13 +88,20 @@ public class TranslateActions(InvocationContext invocationContext, IFileManageme
 
         var stream = await fileManagementClient.DownloadAsync(translateData.File);
         var content = await Transformation.Parse(stream, translateData.File.Name);
-        var segmentTranslations = await content.GetSegments().Where(x => !x.IsIgnorbale && x.IsInitial).Batch(5).Process(BatchTranslate);
+        var unitTranslations = await content.GetUnits().Batch(5, x => !x.IsIgnorbale && x.IsInitial).Process(BatchTranslate);
 
-        foreach (var (segment, translation) in segmentTranslations)
+        foreach (var (unit, results) in unitTranslations)
         {
-            segment.SetTarget(translation.TranslatedText);
-            segment.State = SegmentState.Translated;
+            foreach (var (segment, translation) in results)
+            {
+                segment.SetTarget(translation.TranslatedText);
+                segment.State = SegmentState.Translated;
+            }
+
+            unit.Provenance.Translation.Tool = "Amazon Translate";
+            unit.Provenance.Translation.ToolReference = "https://aws.amazon.com/translate/";
         }
+
 
         if (translateData.OutputFileHandling == "original")
         {
